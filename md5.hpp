@@ -94,32 +94,44 @@ constexpr auto md5(const std::ranges::range auto& message) -> std::array<std::by
         const std::array<std::uint32_t, CHUNK_SIZE / sizeof(std::uint32_t)> M = [&chunkIt]
         {
             std::array<std::uint32_t, CHUNK_SIZE / sizeof(std::uint32_t)> words {};
-            if constexpr (std::endian::native == std::endian::little && std::contiguous_iterator<decltype(chunkIt)>)
+            if constexpr (std::endian::native == std::endian::little)
             {
+                auto chunkToWord = [&words](auto iter)
+                {
+                    for (unsigned int& word : words)
+                    {
+                        // NOLINTBEGIN(readability-magic-numbers)
+                        word  = static_cast<std::uint32_t>(*(iter++)) << 0U;
+                        word |= static_cast<std::uint32_t>(*(iter++)) << 8U;
+                        word |= static_cast<std::uint32_t>(*(iter++)) << 16U;
+                        word |= static_cast<std::uint32_t>(*(iter++)) << 24U;
+                        // NOLINTEND(readability-magic-numbers)
+                    }
+                };
                 if constexpr (std::contiguous_iterator<decltype(chunkIt)>)
                 {
                     std::memcpy(words.data(), std::to_address(chunkIt), CHUNK_SIZE);
                 }
                 else
                 {
+                    // Little-endian, but non-contiguous iterator.
                     // std::as_writable_bytes is not constexpr
-                    auto bytes = std::as_writable_bytes(std::span {words});
-                    std::ranges::copy_n(chunkIt, CHUNK_SIZE, bytes.begin());
+                    if consteval
+                    {
+                        chunkToWord(chunkIt);
+                    }
+                    else
+                    {
+                        // little endian and not consteval
+                        auto bytes = std::as_writable_bytes(std::span {words});
+                        std::ranges::copy_n(chunkIt, CHUNK_SIZE, bytes.begin());
+                    }
                 }
             }
             else
             {
                 // Big endian or not consteval
-                auto it = chunkIt;
-                for (unsigned int& word : words)
-                {
-                    // NOLINTBEGIN(readability-magic-numbers)
-                    word = static_cast<std::uint32_t>(*it++) << 0U;
-                    word |= static_cast<std::uint32_t>(*it++) << 8U;
-                    word |= static_cast<std::uint32_t>(*it++) << 16U;
-                    word |= static_cast<std::uint32_t>(*it++) << 24U;
-                    // NOLINTEND(readability-magic-numbers)
-                }
+                chunkToWord(chunkIt);
             }
             return words;
         }();
@@ -131,6 +143,7 @@ constexpr auto md5(const std::ranges::range auto& message) -> std::array<std::by
         for (const std::uint32_t CURRENT_ROUND :
              std::ranges::views::iota(std::uint32_t {0}, static_cast<std::uint32_t>(TOTAL_ROUND_COUNT)))
         {
+            // for structured binding so it's easy to assign via IILE without zero init overhead in hotpath
             struct FG
             {
                 std::uint32_t m_f;
