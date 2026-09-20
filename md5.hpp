@@ -88,50 +88,52 @@ constexpr auto md5(const std::ranges::range auto& message) -> std::array<std::by
       std::views::single(std::byte {0x80}), std::views::repeat(std::byte {0x00}, ZEROES_COUNT), MESSAGE_LEN_INFO_BYTES
     );
 
-    auto processChunk = [&digest](auto chunkIt)
+    auto processChunk =
+      [&digest](auto chunkIt)
     {
         // we break each chunk into 16 * 32 bit words, labeled M[0 .. 15]
         const std::array<std::uint32_t, CHUNK_SIZE / sizeof(std::uint32_t)> M = [&chunkIt]
         {
             std::array<std::uint32_t, CHUNK_SIZE / sizeof(std::uint32_t)> words {};
-            if constexpr (std::endian::native == std::endian::little)
+
+            if consteval
             {
-                auto chunkToWord = [&words](auto iter)
+                for (unsigned int& word : words)
                 {
-                    for (unsigned int& word : words)
-                    {
-                        // NOLINTBEGIN(readability-magic-numbers)
-                        word  = static_cast<std::uint32_t>(*(iter++)) << 0U;
-                        word |= static_cast<std::uint32_t>(*(iter++)) << 8U;
-                        word |= static_cast<std::uint32_t>(*(iter++)) << 16U;
-                        word |= static_cast<std::uint32_t>(*(iter++)) << 24U;
-                        // NOLINTEND(readability-magic-numbers)
-                    }
-                };
-                if constexpr (std::contiguous_iterator<decltype(chunkIt)>)
-                {
-                    std::memcpy(words.data(), std::to_address(chunkIt), CHUNK_SIZE);
-                }
-                else
-                {
-                    // Little-endian, but non-contiguous iterator.
-                    // std::as_writable_bytes is not constexpr
-                    if consteval
-                    {
-                        chunkToWord(chunkIt);
-                    }
-                    else
-                    {
-                        // little endian and not consteval
-                        auto bytes = std::as_writable_bytes(std::span {words});
-                        std::ranges::copy_n(chunkIt, CHUNK_SIZE, bytes.begin());
-                    }
+                    // NOLINTBEGIN(readability-magic-numbers)
+                    word  = static_cast<std::uint32_t>(*chunkIt++) << 0U;
+                    word |= static_cast<std::uint32_t>(*chunkIt++) << 8U;
+                    word |= static_cast<std::uint32_t>(*chunkIt++) << 16U;
+                    word |= static_cast<std::uint32_t>(*chunkIt++) << 24U;
+                    // NOLINTEND(readability-magic-numbers)
                 }
             }
             else
             {
-                // Big endian or not consteval
-                chunkToWord(chunkIt);
+                if constexpr (std::endian::native == std::endian::little)
+                {
+                    if constexpr (std::contiguous_iterator<decltype(chunkIt)>)
+                    {
+                        std::memcpy(words.data(), std::to_address(chunkIt), CHUNK_SIZE);
+                    }
+                    else
+                    {
+                        auto bytes = std::as_writable_bytes(std::span {words});
+                        std::ranges::copy_n(chunkIt, CHUNK_SIZE, bytes.begin());
+                    }
+                }
+                else
+                {
+                    for (unsigned int& word : words)
+                    {
+                        // NOLINTBEGIN(readability-magic-numbers)
+                        word  = static_cast<std::uint32_t>(*chunkIt++) << 0U;
+                        word |= static_cast<std::uint32_t>(*chunkIt++) << 8U;
+                        word |= static_cast<std::uint32_t>(*chunkIt++) << 16U;
+                        word |= static_cast<std::uint32_t>(*chunkIt++) << 24U;
+                        // NOLINTEND(readability-magic-numbers)
+                    }
+                }
             }
             return words;
         }();
