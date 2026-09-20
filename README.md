@@ -178,23 +178,23 @@ md5sum   5,23s user 0,54s system 99% cpu 5,823 total
 Mine:
 
 ```
-	Command being timed: "./build/md5++ /home/user/VirtualMachines/images/Win11_EnglishInternational_x64v1.iso"
-	User time (seconds): 8.28
-	System time (seconds): 0.55
+	Command being timed: "./build/md5++ /home/paul/VirtualMachines/images/Win11_EnglishInternational_x64v1.iso"
+	User time (seconds): 8.30
+	System time (seconds): 1.01
 	Percent of CPU this job got: 99%
-	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:08.84
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:09.38
 	Average shared text size (kbytes): 0
 	Average unshared data size (kbytes): 0
 	Average stack size (kbytes): 0
 	Average total size (kbytes): 0
-	Maximum resident set size (kbytes): 5441256
+	Maximum resident set size (kbytes): 5440908
 	Average resident set size (kbytes): 0
-	Major (requiring I/O) page faults: 0
-	Minor (reclaiming a frame) page faults: 85162
-	Voluntary context switches: 1
-	Involuntary context switches: 588
+	Major (requiring I/O) page faults: 239
+	Minor (reclaiming a frame) page faults: 85229
+	Voluntary context switches: 144
+	Involuntary context switches: 795
 	Swaps: 0
-	File system inputs: 0
+	File system inputs: 2320936
 	File system outputs: 0
 	Socket messages sent: 0
 	Socket messages received: 0
@@ -239,7 +239,7 @@ Mine:
 heaptrack ./build/md5++ ~/VirtualMachines/images/Win11_EnglishInternational_x64v1.iso
 
 heaptrack stats:
-	allocations:          	15
+	allocations:          	17
 	leaked allocations:   	1
 	temporary allocations:	2
 ```
