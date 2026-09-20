@@ -5,6 +5,8 @@ The utility uses boost's memory mapped file source, which is then placed into a 
 
 Static assertions are used to catch UB and test the functionality at compile time.
 
+The main function uses boost's thread pool for parallel execution. On my SSD the speedup is substatial.
+
 ## Performance
 All values compared to `md5sum (uutils coreutils) 0.8.0`.
 Compiled with ninja using cmake's `Release` configuration with `gcc (GCC) 17.0.0 20260831 (experimental)`. Slightly worse performance (about +3% of coreutils was achieved with `Ubuntu clang version 23.0.0 (++20260707085028+ec9e62cb609a-1~exp1~20260707085040.121)` linked against the gcc standard library.
@@ -12,6 +14,24 @@ The iso files I used for testing were just the first large files that I found th
 All tests were ran on my Lenovo ThinkPad E16 using an AMD Ryzen 5 7535U, 32GB of memory and running Ubuntu 26.04 LTS.
 
 ### Runtime
+
+#### `~/VirtualMachines/**/*`
+
+```
+find ~/VirtualMachines/ -type f -exec stat -c %s {} + | awk '{s+=$1} END {print s " bytes (" s/1024/1024 " MB)"}'
+49999727371 bytes (47683.5 MB)
+
+files=(~/VirtualMachines/**/*)
+echo $#files
+61
+
+time ./md5++ ~/VirtualMachines/**/*
+[...]
+./md5++ ~/VirtualMachines/**/*  107,97s user 55,97s system 575% cpu 28,489 total
+
+time md5sum ~/VirtualMachines/**/*
+md5sum ~/VirtualMachines/**/*  77,15s user 23,58s system 98% cpu 1:42,01 total
+```
 
 #### Win11_EnglishInternational_x64v1.iso
 
