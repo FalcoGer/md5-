@@ -202,7 +202,7 @@ constexpr auto md5(const std::ranges::range auto& message) -> std::array<std::by
     else
     {
         std::array<std::byte, MD5_DIGEST_LEN> result {};
-        for (const std::size_t IDX : std::ranges::views::iota(std::size_t {0}, MD5_DIGEST_LEN))
+        for (const std::size_t IDX : std::ranges::views::iota(std::size_t {0}, digest.size()))
         {
             // NOLINTBEGIN(cppcoreguidelines-pro-bounds-constant-array-index,cppcoreguidelines-pro-bounds-avoid-unchecked-container-access,readability-magic-numbers)
             result[(IDX * 4U) + 0U] = static_cast<std::byte>(digest[IDX] >> 0U);
