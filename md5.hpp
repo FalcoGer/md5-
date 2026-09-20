@@ -168,7 +168,7 @@ constexpr auto md5(const std::ranges::range auto& message) -> std::array<std::by
                     return {b ^ c ^ d, static_cast<uint32_t>(((3U * CURRENT_ROUND) + 5U) % M.size())};
                 }
                 // NOLINTNEXTLINE(readability-magic-numbers)
-                return {c ^ (b | (~d)), static_cast<uint32_t>(static_cast<uint32_t>(7U * CURRENT_ROUND) % M.size())};
+                return {c ^ (b | (~d)), static_cast<uint32_t>((static_cast<std::size_t>(7U) * CURRENT_ROUND) % M.size())};
             }();
 
             // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index,cppcoreguidelines-pro-bounds-avoid-unchecked-container-access)
