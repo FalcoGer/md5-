@@ -7,7 +7,7 @@ Static assertions are used to catch UB and test the functionality at compile tim
 
 ## Performance
 All values compared to `md5sum (uutils coreutils) 0.8.0`.
-Compiled with ninja using cmake's `Release` configuration with `gcc (GCC) 17.0.0 20260831 (experimental)`.
+Compiled with ninja using cmake's `Release` configuration with `gcc (GCC) 17.0.0 20260831 (experimental)`. Slightly worse performance (about +3% of coreutils was achieved with `Ubuntu clang version 23.0.0 (++20260707085028+ec9e62cb609a-1~exp1~20260707085040.121)` linked against the gcc standard library.
 The iso files I used for testing were just the first large files that I found that had on hand.
 All tests were ran on my Lenovo ThinkPad E16 using an AMD Ryzen 5 7535U, 32GB of memory and running Ubuntu 26.04 LTS.
 
