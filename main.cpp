@@ -87,6 +87,7 @@ auto main([[maybe_unused]] const int argc, [[maybe_unused]] const char* const* c
     boost::asio::thread_pool pool {THREAD_COUNT > 0 ? THREAD_COUNT : 4};
 
     std::vector<std::future<std::expected<std::string, std::string>>> futures;
+    futures.reserve(ARGUMENTS.size() - 1);
 
     for (const auto* const ptr_cstrFilePath : ARGUMENTS | std::views::drop(1))
     {

@@ -30,6 +30,7 @@ time ./md5++ ~/VirtualMachines/**/*
 ./md5++ ~/VirtualMachines/**/*  107,97s user 55,97s system 575% cpu 28,489 total
 
 time md5sum ~/VirtualMachines/**/*
+[...]
 md5sum ~/VirtualMachines/**/*  77,15s user 23,58s system 98% cpu 1:42,01 total
 ```
 
