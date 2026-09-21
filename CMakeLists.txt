@@ -21,6 +21,7 @@ endif()
 
 find_package(Boost REQUIRED COMPONENTS iostreams)
 
-add_executable(md5++ main.cpp)
+add_executable(md5++ main.cpp static_tests.cpp)
 target_link_libraries(md5++ PRIVATE Boost::iostreams)
 
+add_executable(md5++_v2 main2.cpp static_tests.cpp)

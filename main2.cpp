@@ -1,5 +1,8 @@
 #include "md5.hpp"
+#include <algorithm>
 #include <exception>
+#include <fstream>
+#include <inplace_vector>
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wnull-dereference"
@@ -8,7 +11,6 @@
 #include <boost/asio/use_future.hpp>
 #pragma GCC diagnostic pop
 
-#include <boost/iostreams/device/mapped_file.hpp>
 #include <expected>
 #include <fcntl.h>    // For AT_FDCWD and AT_EACCESS
 #include <filesystem>
@@ -58,10 +60,39 @@ auto main([[maybe_unused]] const int argc, [[maybe_unused]] const char* const* c
 
         try
         {
-            boost::iostreams::mapped_file_source file {path};
-            const auto BYTE_VIEW = file | std::views::transform([](const char CHR) { return static_cast<std::byte>(CHR); });
-            const auto DIGEST = MD5::md5(BYTE_VIEW);
-            return DIGEST.toString() + "  " + std::string(path);
+            auto file = std::ifstream(path, std::ios_base::binary);
+            if (!file.is_open())
+            {
+                return std::unexpected<std::string> {"Failed to open file: " + path.display_string()};
+            }
+
+            MD5::Digest                                        digest;
+
+            // read chunks of 64 into a vector of bytes until remaining size is less than 64 or end of file
+            std::inplace_vector<std::byte, MD5::Chunk::size()> buffer;
+            std::array<std::byte, MD5::Chunk::size()>          data {};
+            std::streamsize                                    bytesRead {};
+            std::size_t                                        totalBytesRead {};
+            while (true)
+            {
+                buffer.clear();
+                // read 64 byte at once
+                file.read(reinterpret_cast<char*>(data.data()), MD5::Chunk::size());
+                bytesRead       = file.gcount();
+                totalBytesRead += static_cast<std::size_t>(bytesRead);
+                std::ranges::copy_n(data.begin(), bytesRead, std::back_inserter(buffer));
+                if (buffer.size() < MD5::Chunk::size())
+                {
+                    break;
+                }
+
+                auto it = std::begin(buffer);
+                digest.processChunk(MD5::Chunk(it));
+            }
+            // process the rest of the file
+            digest.digestTail(buffer, totalBytesRead);
+
+            return digest.toString() + "  " + std::string(path);
         }
         catch (const std::exception& ex)
         {
